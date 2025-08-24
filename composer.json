@@ -1,5 +1,5 @@
 {
-    "name": "rampmaster/phpty",
+    "name": "rampmaster/phptypist",
     "description": "The main typist service for generating PDFs from Markdown for ebooks.",
     "homepage": "https://phptypist.me",
     "authors": [
