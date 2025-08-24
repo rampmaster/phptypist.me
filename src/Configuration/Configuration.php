@@ -55,10 +55,8 @@ class Configuration implements ConfigurationInterface
                 ->end()
                 ->arrayNode('extension')
                     ->cannotBeEmpty()
-                    ->requiresAtLeastOneElement()
-                    ->scalarPrototype()
-                        ->isRequired()
-                    ->end()
+                    ->defaultValue(["*.md", "*.markdown"])
+                    ->scalarPrototype()->end()
                 ->end()
             ->end()
         ;

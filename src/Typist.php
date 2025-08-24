@@ -8,6 +8,7 @@ use League\CommonMark\Environment\Environment;
 use League\CommonMark\Extension\CommonMark\CommonMarkCoreExtension;
 use League\CommonMark\Extension\GithubFlavoredMarkdownExtension;
 use League\CommonMark\MarkdownConverter;
+use Rampmaster\PHPTypistMe\Configuration\ConfigurationLoader;
 use Symfony\Component\Finder\Finder;
 use Rampmaster\PHPTypistMe\Model\Chapter;
 use Rampmaster\PHPTypistMe\Renderer\MpdfRenderer;
@@ -16,10 +17,12 @@ class Typist
 {
     protected array $listeners = [];
 
-    public function generate(array $bookConfig): string
+    public function __construct()
     {
-        var_dump($bookConfig);
+    }
 
+    public function generate(ConfigurationLoader $bookConfig): string
+    {
         $config = [];
         $environment = new Environment($config);
         $environment->addExtension(new CommonMarkCoreExtension());
@@ -32,15 +35,15 @@ class Typist
         $pdfRenderer = new MpdfRenderer();
 
         $pdfRenderer->setDebug(true);
-        $pdfRenderer->setBasePath($bookConfig['content'][0] . '/');
+        $pdfRenderer->setBasePath($bookConfig->getConfig('content')[0] . '/');
 
-        $pdfRenderer->setTitle($bookConfig['title']);
-        $pdfRenderer->setAuthor($bookConfig['author']);
+        $pdfRenderer->setTitle($bookConfig->getConfig('title'));
+        $pdfRenderer->setAuthor($bookConfig->getConfig('author'));
 
         //$bookConfig->observers->initializedPdf($pdfRenderer);
 
         // TODO: CSS reader
-        $stylesheet = $bookConfig['theme'] . '/theme.html';
+        $stylesheet = $bookConfig->getConfig('theme') . '/theme.html';
         //$mpdf->WriteHTML(file_get_contents($stylesheet));
 
         //TODO: Cover reader
@@ -57,12 +60,12 @@ class Typist
 
         //$bookConfig->observers->coverAdded($pdfRenderer);
 
-        $pdfRenderer->setTOC($bookConfig['toc']);
+        $pdfRenderer->setTOC($bookConfig->getConfig('toc'));
 
-        $pdfRenderer->setFooter($bookConfig['footer']);
+        $pdfRenderer->setFooter($bookConfig->getConfig('footer'));
 
         $finder = new Finder();
-        $finder->files()->in($bookConfig['content'])->name($bookConfig['markdownExtensions']);
+        $finder->files()->in($bookConfig->getConfig('content'))->name($bookConfig->getConfig('extension'));
 
         $totalChapters = $finder->count();
         $chapterNumber = 0;

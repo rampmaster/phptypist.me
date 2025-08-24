@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Rampmaster\PHPTypistMe\Exception;
 
-use Exception;
+use RuntimeException;
 
-class NotRendererException extends Exception
+class NotRendererException extends RuntimeException
 {
 }

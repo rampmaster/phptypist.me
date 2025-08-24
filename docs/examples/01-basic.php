@@ -1,28 +1,26 @@
 <?php
 
-use Rampmaster\PHPTypistMe\Config;
+declare(strict_types=1);
+
+use Rampmaster\PHPTypistMe\Configuration\ConfigurationLoader;
 use Rampmaster\PHPTypistMe\Typist;
 
 require __DIR__ . '/../../vendor/autoload.php';
 
 $theme = __DIR__ . '/../../assets/data/theme';
 $content = __DIR__ . '/../../assets/data/content';
-$config = new Config([
-    'theme' => $theme,
-    'content' => $content,
-    'title' => 'A title',
-    'author' => 'An author',
-]);
-
-$typist = new Typist();
-$config = new \Rampmaster\PHPTypistMe\Configuration\ConfigurationLoader();
-$config->load(['typist_me' => [
+$configData = [
     'theme' => $theme,
     'content' => [
         $content
     ],
     'title' => 'A title',
     'author' => 'An author',
-]]);
-$result = $typist->generate($config->config);
-file_put_contents(__DIR__.'/01-basic.pdf',$result);
+];
+
+$typist = new Typist();
+$config = new ConfigurationLoader();
+$config->addArrayConfig($configData);
+$config->process();
+$result = $typist->generate($config);
+file_put_contents(__DIR__ . '/01-basic.pdf', $result);
