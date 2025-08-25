@@ -5,8 +5,13 @@
     "authors": [
       {
         "name": "Roberto Moreno",
+        "role": "Mantainer",
         "email": "rmorenp@gmail.com",
         "homepage": "https://rampmaster.dev"
+      },
+      {
+        "name": "Others Contributors",
+        "homepage": "https://github.com/rampmaster/phptypist.me/graphs/contributors"
       }
     ],
     "type": "library",
