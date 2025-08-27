@@ -23,13 +23,11 @@
         "league/commonmark": "^2.4",
         "mpdf/mpdf": "^8.1",
         "spatie/commonmark-highlighter": "^3.0",
-        "illuminate/support": "^10.12",
-        "illuminate/collections": "^10.12",
         "symfony/config": "^6.0|^7.0",
         "symfony/event-dispatcher": "^6.0|^7.0",
         "symfony/filesystem": "^6.0|^7.0",
-        "symfony/yaml": "^7.3",
-        "symfony/finder": "^7.3"
+        "symfony/yaml": "^6.0|^7.0",
+        "symfony/finder": "^6.0|^7.0"
     },
     "suggest": {
       "mpdf/mpdf": "^8.1"

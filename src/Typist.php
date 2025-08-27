@@ -5,70 +5,78 @@ declare(strict_types=1);
 namespace Rampmaster\PHPTypistMe;
 
 use League\CommonMark\Environment\Environment;
+use League\CommonMark\Exception\CommonMarkException;
+use League\CommonMark\Extension\Attributes\AttributesExtension;
 use League\CommonMark\Extension\CommonMark\CommonMarkCoreExtension;
+use League\CommonMark\Extension\CommonMark\Node\Block\FencedCode;
+use League\CommonMark\Extension\CommonMark\Node\Block\IndentedCode;
 use League\CommonMark\Extension\GithubFlavoredMarkdownExtension;
 use League\CommonMark\MarkdownConverter;
 use Rampmaster\PHPTypistMe\Configuration\ConfigurationLoader;
+use Rampmaster\PHPTypistMe\Event\ChapterEvent;
+use Rampmaster\PHPTypistMe\Renderer\RendererInterface;
+use Spatie\CommonMarkHighlighter\FencedCodeRenderer;
+use Spatie\CommonMarkHighlighter\IndentedCodeRenderer;
+use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Finder\Finder;
 use Rampmaster\PHPTypistMe\Model\Chapter;
 use Rampmaster\PHPTypistMe\Renderer\MpdfRenderer;
 
 class Typist
 {
-    protected array $listeners = [];
+    private EventDispatcher $dispatcher;
+    private ?RendererInterface $renderer = null;
 
     public function __construct()
     {
+        $this->dispatcher = new EventDispatcher();
     }
 
+    public function setRenderer(string $className = MpdfRenderer::class, bool $isDebug = false): void
+    {
+        $this->renderer = new $className();
+        $this->renderer->setDebug($isDebug);
+    }
+
+    /**
+     * @throws CommonMarkException
+     */
     public function generate(ConfigurationLoader $bookConfig): string
     {
         $config = [];
         $environment = new Environment($config);
         $environment->addExtension(new CommonMarkCoreExtension());
         $environment->addExtension(new GithubFlavoredMarkdownExtension());
+        $environment->addRenderer(FencedCode::class, new FencedCodeRenderer());
+        $environment->addRenderer(IndentedCode::class, new IndentedCodeRenderer());
+        $environment->addExtension(new AttributesExtension());
 
-        //$bookConfig->observers->initializedMarkdownEnvironment($environment);
         $converter = new MarkdownConverter($environment);
 
-        // TODO: Abstract to factory
-        $pdfRenderer = new MpdfRenderer();
-
-        $pdfRenderer->setDebug(true);
-        $pdfRenderer->setBasePath($bookConfig->getConfig('content')[0] . '/');
-
-        $pdfRenderer->setTitle($bookConfig->getConfig('title'));
-        $pdfRenderer->setAuthor($bookConfig->getConfig('author'));
-
-        //$bookConfig->observers->initializedPdf($pdfRenderer);
-
-        // TODO: CSS reader
-        $stylesheet = $bookConfig->getConfig('theme') . '/theme.html';
-        //$mpdf->WriteHTML(file_get_contents($stylesheet));
-
-        //TODO: Cover reader
-        /*
-        if (is_readable($bookConfig->theme . '/cover.jpg')) {
-            $mpdf->Image($bookConfig->theme . '/cover.jpg', 0, 0, 210, 297, 'jpg', '', true, false);
-        } elseif (is_readable($bookConfig->theme . '/cover.html')) {
-            $mpdf->WriteHTML(file_get_contents($bookConfig->theme . '/cover.html'));
-        } else {
-            $coverHtml = '<section style="text-align: center; page-break-after:always; padding-top: 100pt"><h1>%s</h1><h2>%s</h2></section>';
-            $mpdf->WriteHTML(sprintf($coverHtml, $bookConfig->title, $bookConfig->author));
+        if (!($this->renderer instanceof RendererInterface)) {
+            $this->setRenderer();
         }
-        */
 
-        //$bookConfig->observers->coverAdded($pdfRenderer);
+        $assets = $bookConfig->getConfig('assets');
+        if ($assets) {
+            $this->renderer->setBasePath($assets);
+        }
 
-        $pdfRenderer->setTOC($bookConfig->getConfig('toc'));
-
-        $pdfRenderer->setFooter($bookConfig->getConfig('footer'));
+        $this->renderer->setTitle($bookConfig->getConfig('title'));
+        $this->renderer->setAuthor($bookConfig->getConfig('author'));
+        $this->renderer->setStyle($bookConfig->getConfig('style'));
+        $this->renderer->setCover($bookConfig->getConfig('cover'));
+        $this->renderer->setTOC($bookConfig->getConfig('toc'));
+        $this->renderer->setHeader($bookConfig->getConfig('header'));
+        $this->renderer->setFooter($bookConfig->getConfig('footer'));
 
         $finder = new Finder();
-        $finder->files()->in($bookConfig->getConfig('content'))->name($bookConfig->getConfig('extension'));
+        $finder->files()->in($bookConfig->getConfig('content'))->name($bookConfig->getConfig('extension'))->sortByName();
 
         $totalChapters = $finder->count();
         $chapterNumber = 0;
+
         foreach ($finder as $contentFile) {
             $chapterNumber++;
 
@@ -79,11 +87,22 @@ class Typist
                 totalChapters: $totalChapters
             );
 
-            //$bookConfig->observers->parsed($chapter);
+            $event = new ChapterEvent($chapter);
+            $this->dispatcher->dispatch($event);
 
-            $pdfRenderer->setChapter($chapter);
+            $this->renderer->setChapter($chapter);
         }
 
-        return $pdfRenderer->render();
+        return $this->renderer->render();
+    }
+
+    public function addListener($event, $listener, int $priority = 0): void
+    {
+        $this->dispatcher->addListener($event, $listener, $priority);
+    }
+
+    public function addSubscriber(EventSubscriberInterface $eventSubscriber): void
+    {
+        $this->dispatcher->addSubscriber($eventSubscriber);
     }
 }

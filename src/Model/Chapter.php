@@ -8,7 +8,7 @@ use League\CommonMark\Extension\FrontMatter\Output\RenderedContentWithFrontMatte
 use League\CommonMark\Output\RenderedContent;
 use League\CommonMark\Output\RenderedContentInterface;
 
-class Chapter implements \Rampmaster\PHPTypistMe\Contracts\Chapter
+class Chapter
 {
     protected string $html;
 
