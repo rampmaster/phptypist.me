@@ -34,17 +34,6 @@ class FunctionalTest extends TestCase
     */
     public function testHtmlCoverWithTocNoTocHeaderWithFooterWithFiles(): void
     {
-        $observerForParsed = new class extends \Rampmaster\PHPTypistMe\Observers\Observer {
-            public function __construct(public int $times = 0)
-            {
-            }
-
-            public function parsed(Chapter $chapter): void
-            {
-                $this->times++;
-            }
-        };
-
         $theme = __DIR__ . '/../../assets/data/another-theme';
         $content = __DIR__ . '/../../assets/data/content';
         $configData = [
@@ -63,23 +52,10 @@ class FunctionalTest extends TestCase
         $result = $typist->generate($config);
 
         self::assertNotEmpty($result);
-
-        //self::assertEquals(2, $observerForParsed->times);
     }
 
     public function testImageCover(): void
     {
-        $observerForParsed = new class extends \Rampmaster\PHPTypistMe\Observers\Observer {
-            public function __construct(public int $times = 0)
-            {
-            }
-
-            public function parsed(Chapter $chapter): void
-            {
-                $this->times++;
-            }
-        };
-
         $theme = __DIR__ . '/../../assets/data/theme';
         $content = __DIR__ . '/../../assets/data/content';
         $configData = [
@@ -96,7 +72,5 @@ class FunctionalTest extends TestCase
         $result = $typist->generate($config);
 
         self::assertNotEmpty($result);
-
-        //self::assertEquals(2, $observerForParsed->times);
     }
 }

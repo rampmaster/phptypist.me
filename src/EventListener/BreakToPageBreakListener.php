@@ -2,18 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Rampmaster\PHPTypistMe\Observers;
+namespace Rampmaster\PHPTypistMe\EventListener;
 
-use Rampmaster\PHPTypistMe\Contracts\Chapter;
+use Rampmaster\PHPTypistMe\Event\ChapterEvent;
 
-class BreakToPageBreak extends Observer
+class BreakToPageBreakListener
 {
     public function __construct(protected string $token = '{BREAK}')
     {
     }
 
-    public function parsed(Chapter $chapter): void
+    public function parsed(ChapterEvent $event): void
     {
+        $chapter = $event->getChapter();
         $breakHtml = '<div style="page-break-after:always"></div>';
 
         $chapter->setHtml(str_replace($this->token, $breakHtml, $chapter->getHtml()));
