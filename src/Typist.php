@@ -31,9 +31,6 @@ class Typist
         $this->renderer->setDebug($isDebug);
     }
 
-    /**
-     * @throws CommonMarkException
-     */
     public function generate(ConfigurationLoader $bookConfig): string
     {
         $config = [];

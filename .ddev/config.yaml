@@ -1,6 +1,6 @@
 name: phptypist-me
 type: php
-docroot: ""
+docroot: "docs/_site"
 php_version: "8.3"
 webserver_type: nginx-fpm
 xdebug_enabled: false

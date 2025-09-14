@@ -46,9 +46,4 @@ class Chapter
     {
         return $this->chapterNumber === $this->totalChapters;
     }
-
-    public function getMetaData(): array
-    {
-        return $this->markdown instanceof RenderedContentWithFrontMatter ? $this->markdown->getFrontMatter() : [];
-    }
 }
