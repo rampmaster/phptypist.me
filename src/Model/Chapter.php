@@ -12,7 +12,7 @@ class Chapter
 {
     protected string $html;
 
-    public function __construct(protected RenderedContent|RenderedContentInterface $markdown, protected int $chapterNumber, protected int $totalChapters)
+    public function __construct(protected string $markdown, protected int $chapterNumber, protected int $totalChapters)
     {
         $this->setHtml($markdown);
     }

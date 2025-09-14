@@ -4,23 +4,15 @@ declare(strict_types=1);
 
 namespace Rampmaster\PHPTypistMe;
 
-use League\CommonMark\Environment\Environment;
-use League\CommonMark\Exception\CommonMarkException;
-use League\CommonMark\Extension\Attributes\AttributesExtension;
-use League\CommonMark\Extension\CommonMark\CommonMarkCoreExtension;
-use League\CommonMark\Extension\CommonMark\Node\Block\FencedCode;
-use League\CommonMark\Extension\CommonMark\Node\Block\IndentedCode;
-use League\CommonMark\Extension\GithubFlavoredMarkdownExtension;
-use League\CommonMark\MarkdownConverter;
 use Rampmaster\PHPTypistMe\Configuration\ConfigurationLoader;
 use Rampmaster\PHPTypistMe\Event\ChapterEvent;
 use Rampmaster\PHPTypistMe\Renderer\RendererInterface;
-use Spatie\CommonMarkHighlighter\FencedCodeRenderer;
-use Spatie\CommonMarkHighlighter\IndentedCodeRenderer;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Finder\Finder;
+use Rampmaster\PHPTypistMe\Model\Book;
 use Rampmaster\PHPTypistMe\Model\Chapter;
+use Rampmaster\PHPTypistMe\Reader\MarkdownReader;
 use Rampmaster\PHPTypistMe\Renderer\MpdfRenderer;
 
 class Typist
@@ -45,14 +37,7 @@ class Typist
     public function generate(ConfigurationLoader $bookConfig): string
     {
         $config = [];
-        $environment = new Environment($config);
-        $environment->addExtension(new CommonMarkCoreExtension());
-        $environment->addExtension(new GithubFlavoredMarkdownExtension());
-        $environment->addRenderer(FencedCode::class, new FencedCodeRenderer());
-        $environment->addRenderer(IndentedCode::class, new IndentedCodeRenderer());
-        $environment->addExtension(new AttributesExtension());
-
-        $converter = new MarkdownConverter($environment);
+        $reader = new MarkdownReader($config);
 
         if (!($this->renderer instanceof RendererInterface)) {
             $this->setRenderer();
@@ -82,7 +67,7 @@ class Typist
 
             $markdown = file_get_contents($contentFile->getPathname());
             $chapter = new Chapter(
-                markdown: $converter->convert($markdown),
+                markdown: $reader->convert($markdown),
                 chapterNumber: $chapterNumber,
                 totalChapters: $totalChapters
             );
