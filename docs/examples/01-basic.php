@@ -22,7 +22,7 @@ $config = new ConfigurationLoader();
 $config->addArrayConfig($configData);
 $config->process();
 
-$typist = new Typist();
+$typist = new Typist($config);
 $typist->addListener(\Rampmaster\PHPTypistMe\Event\ChapterEvent::class, [
     new \Rampmaster\PHPTypistMe\EventListener\FirstElementInChapterCSSClassListener(), 'parsed',
 ], 0);

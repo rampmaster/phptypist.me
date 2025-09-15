@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rampmaster\PHPTypistMe\Reader;
 
+use Rampmaster\PHPTypistMe\Reader\ReaderInterface;
 use League\CommonMark\Environment\Environment;
 use League\CommonMark\Exception\CommonMarkException;
 use League\CommonMark\Extension\Attributes\AttributesExtension;
@@ -15,7 +16,7 @@ use League\CommonMark\MarkdownConverter;
 use Spatie\CommonMarkHighlighter\FencedCodeRenderer;
 use Spatie\CommonMarkHighlighter\IndentedCodeRenderer;
 
-class MarkdownReader
+class MarkdownReader implements ReaderInterface
 {
     private MarkdownConverter $converter;
 
@@ -31,7 +32,7 @@ class MarkdownReader
         $this->converter = new MarkdownConverter($environment);
     }
 
-    public function convert(string $markdown): string
+    public function read(string $markdown): string
     {
         return $this->converter->convert($markdown)->getContent();
     }

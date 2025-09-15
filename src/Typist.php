@@ -12,17 +12,37 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Finder\Finder;
 use Rampmaster\PHPTypistMe\Model\Book;
 use Rampmaster\PHPTypistMe\Model\Chapter;
+use Rampmaster\PHPTypistMe\Reader\ReaderInterface;
+use Rampmaster\PHPTypistMe\Reader\PlainTextReader;
 use Rampmaster\PHPTypistMe\Reader\MarkdownReader;
+use Rampmaster\PHPTypistMe\Writer\WriterInterface;
+use Rampmaster\PHPTypistMe\Writer\PlainTextWriter;
 use Rampmaster\PHPTypistMe\Renderer\MpdfRenderer;
 
 class Typist
 {
     private EventDispatcher $dispatcher;
     private ?RendererInterface $renderer = null;
+    private ?Book $book = null;
+    private ReaderInterface $reader;
+    private WriterInterface $writer;
+    
 
-    public function __construct()
+    public function __construct(private readonly ConfigurationLoader $config)
     {
         $this->dispatcher = new EventDispatcher();
+        $this->reader = new PlainTextReader();
+        $this->writer = new PlainTextWriter();
+    }
+    
+    public function setReader(ReaderInterface $reader): void
+    {
+        $this->reader = $reader;
+    }
+
+    public function setWriter(WriterInterface $writer): void
+    {
+        $this->writer = $writer;
     }
 
     public function setRenderer(string $className = MpdfRenderer::class, bool $isDebug = false): void
@@ -31,8 +51,15 @@ class Typist
         $this->renderer->setDebug($isDebug);
     }
 
-    public function generate(ConfigurationLoader $bookConfig): string
+    public function generate(): string
     {
+        $bookConfig = $this->config;
+        
+        $book = new Book(
+            title: $bookConfig->getConfig('title'),
+            author: $bookConfig->getConfig('author'),
+        );
+        
         $config = [];
         $reader = new MarkdownReader($config);
 
@@ -64,7 +91,7 @@ class Typist
 
             $markdown = file_get_contents($contentFile->getPathname());
             $chapter = new Chapter(
-                markdown: $reader->convert($markdown),
+                markdown: $reader->read($markdown),
                 chapterNumber: $chapterNumber,
                 totalChapters: $totalChapters
             );
